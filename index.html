@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIG TIME — 2026 Dynasty Superflex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14161C;
+    --surface: #1B1E27;
+    --surface2: #22252F;
+    --line: #2E323F;
+    --text: #ECEDF2;
+    --muted: #8B90A0;
+    --muted2: #5D6273;
+    --brass: #D4A24C;
+    --brass-dim: #8A6E38;
+    --good: #6FBF7A;
+    --bad: #E0655A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  html{ overflow-x:hidden; }
+  body{
+    background: radial-gradient(1200px 600px at 15% -10%, #1E2130 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  .display{ font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:0.02em; }
+
+  .table-wrap{ overflow-x:auto; max-width:100%; -webkit-overflow-scrolling:touch; }
+  .table-wrap table{ min-width:600px; }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background: rgba(20,22,28,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-inner{
+    max-width:1180px; margin:0 auto; padding:14px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    flex-wrap:wrap;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand .mark{
+    font-family:'Oswald',sans-serif; font-weight:700; font-size:22px;
+    letter-spacing:0.06em; color:var(--text);
+  }
+  .brand .mark span{ color:var(--brass); }
+  .brand .sub{ color:var(--muted); font-size:12px; letter-spacing:0.04em; }
+
+  .nav{ display:flex; flex-wrap:wrap; gap:4px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:4px; max-width:100%; }
+  .nav button{
+    appearance:none; border:none; background:transparent; color:var(--muted);
+    font-family:'Oswald',sans-serif; font-weight:500; letter-spacing:0.05em; text-transform:uppercase;
+    font-size:12.5px; padding:8px 14px; border-radius:7px; cursor:pointer;
+    transition: all .15s ease;
+  }
+  .nav button:hover{ color:var(--text); }
+  .nav button.active{ background:var(--brass); color:#1A1508; }
+
+  .updated{ font-size:11px; color:var(--muted2); white-space:nowrap; }
+  .updated b{ color:var(--muted); font-weight:500; }
+  .live-dot{
+    display:inline-block; width:6px; height:6px; border-radius:50%;
+    background:var(--good); margin-right:6px; box-shadow:0 0 0 2px rgba(111,191,122,0.15);
+  }
+
+  main{ max-width:1180px; margin:0 auto; padding:28px 20px 80px; overflow-x:hidden; }
+  .view{ display:none; }
+  .view.active{ display:block; animation: fadein .25s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  h1.page-title{
+    font-family:'Oswald',sans-serif; font-weight:700; font-size:28px; letter-spacing:0.02em;
+    margin:0 0 4px; text-transform:uppercase;
+  }
+  .page-sub{ color:var(--muted); font-size:13.5px; margin:0 0 22px; }
+
+  /* ---------- ladder (standings) ---------- */
+  .ladder{ display:flex; flex-direction:column; gap:8px; margin-bottom:36px; }
+  .ladder-row{
+    position:relative; display:grid; grid-template-columns: 34px 1fr auto; align-items:center;
+    gap:14px; background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:12px 16px; cursor:pointer; overflow:hidden; transition: border-color .15s ease, transform .1s ease;
+  }
+  .ladder-row:hover{ border-color: var(--muted2); transform: translateX(2px); }
+  .ladder-row .fillbar{
+    position:absolute; left:0; top:0; bottom:0; opacity:0.14; z-index:0;
+  }
+  .ladder-row > *{ position:relative; z-index:1; }
+  .ladder-rank{ font-family:'Oswald',sans-serif; font-weight:700; font-size:20px; color:var(--muted2); }
+  .ladder-row.rank-1 .ladder-rank{ color:var(--brass); }
+  .ladder-main{ display:flex; align-items:center; gap:12px; min-width:0; }
+  .swatch{ width:10px; height:10px; border-radius:3px; flex:none; }
+  .ladder-name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:17px; letter-spacing:0.01em; }
+  .ladder-crown{
+    font-family:'Oswald',sans-serif; font-size:10px; font-weight:600; letter-spacing:0.05em;
+    margin-left:8px; color:var(--brass); border:1px solid var(--brass-dim); border-radius:5px;
+    padding:2px 7px; text-transform:uppercase; vertical-align:middle;
+  }
+  .ladder-stats{ display:flex; gap:22px; align-items:baseline; }
+  .stat-block{ text-align:right; min-width:56px; }
+  .stat-block .v{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:15px; }
+  .stat-block .l{ display:block; font-size:9.5px; letter-spacing:0.08em; color:var(--muted2); text-transform:uppercase; margin-top:2px; }
+
+  /* ---------- generic cards / grid ---------- */
+  .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+  @media (max-width: 720px){ .grid-2{ grid-template-columns:1fr; } }
+  .grid-3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; }
+  @media (max-width: 980px){ .grid-3{ grid-template-columns:1fr 1fr; } }
+  @media (max-width: 640px){ .grid-3{ grid-template-columns:1fr; } }
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px 20px; }
+  .card h3{ margin:0 0 12px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; font-weight:600; }
+
+  /* ---------- rankings ---------- */
+  .filters{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
+  .filters input[type=text]{
+    background:var(--surface); border:1px solid var(--line); color:var(--text);
+    padding:9px 12px; border-radius:8px; font-family:'IBM Plex Sans',sans-serif; font-size:13.5px;
+    min-width:220px; outline:none;
+  }
+  .filters input[type=text]:focus{ border-color:var(--brass); }
+  .filters select{
+    background:var(--surface); border:1px solid var(--line); color:var(--text);
+    padding:9px 10px; border-radius:8px; font-family:'IBM Plex Sans',sans-serif; font-size:13.5px; outline:none;
+  }
+  .result-count{ color:var(--muted2); font-size:12px; margin-left:auto; }
+
+  .rank-mode-tabs{ display:flex; gap:4px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:4px; margin-bottom:16px; width:fit-content; }
+  .rank-mode-tabs button{
+    appearance:none; border:none; background:transparent; color:var(--muted);
+    font-family:'Oswald',sans-serif; font-weight:500; letter-spacing:0.04em; text-transform:uppercase;
+    font-size:12.5px; padding:8px 16px; border-radius:7px; cursor:pointer;
+  }
+  .rank-mode-tabs button.active{ background:var(--brass); color:#1A1508; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  thead th{
+    text-align:left; font-family:'Oswald',sans-serif; font-weight:600; font-size:11px;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); padding:10px 12px;
+    border-bottom:1px solid var(--line); cursor:pointer; white-space:nowrap; user-select:none;
+  }
+  thead th:hover{ color:var(--text); }
+  thead th.sorted{ color:var(--brass); }
+  tbody td{ padding:9px 12px; border-bottom:1px solid rgba(46,50,63,0.5); }
+  tbody tr:hover{ background:rgba(255,255,255,0.02); }
+  .pos-pill{
+    display:inline-block; font-family:'Oswald',sans-serif; font-size:10.5px; font-weight:600;
+    padding:2px 7px; border-radius:5px; letter-spacing:0.03em;
+  }
+  .pos-QB{ background:rgba(212,164,76,0.16); color:#E4BC72; }
+  .pos-RB{ background:rgba(111,191,122,0.16); color:#8ED198; }
+  .pos-WR{ background:rgba(91,141,239,0.16); color:#8FB0F3; }
+  .pos-TE{ background:rgba(161,95,217,0.18); color:#C398EA; }
+  .pos-K, .pos-DST{ background:rgba(139,144,160,0.16); color:var(--muted); }
+  .owner-pill{
+    display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text);
+    cursor:pointer;
+  }
+  .owner-pill .swatch{ width:8px; height:8px; }
+  .csv-val{ font-family:'IBM Plex Mono',monospace; font-weight:600; }
+  .rank-num{ color:var(--muted2); font-family:'IBM Plex Mono',monospace; }
+
+  /* ---------- team detail ---------- */
+  .team-header{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .team-header .swatch{ width:16px; height:16px; border-radius:5px; }
+  .team-header h1{ margin:0; }
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:12.5px;
+    cursor:pointer; margin-bottom:16px; font-family:'Oswald',sans-serif; letter-spacing:0.04em; text-transform:uppercase;
+  }
+  .back-link:hover{ color:var(--brass); }
+
+  .pos-stat-row{
+    display:grid; grid-template-columns: 44px 1fr auto; gap:12px; align-items:center;
+    padding:10px 0; border-bottom:1px solid rgba(46,50,63,0.5);
+  }
+  .pos-stat-row:last-child{ border-bottom:none; }
+  .pos-stat-rank{ font-family:'IBM Plex Mono',monospace; color:var(--muted); font-size:12px; }
+
+  .starters-list{ display:flex; flex-direction:column; gap:0; }
+  .starter-row{
+    display:grid; grid-template-columns: 60px 1fr auto; gap:10px; align-items:center;
+    padding:8px 0; border-bottom:1px solid rgba(46,50,63,0.5); font-size:13.5px;
+  }
+  .starter-row:last-child{ border-bottom:none; }
+  .slot-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--brass);
+    background:rgba(212,164,76,0.1); padding:3px 6px; border-radius:5px; text-align:center;
+  }
+
+  footer{ text-align:center; padding:30px 20px 50px; color:var(--muted2); font-size:11.5px; }
+
+  /* ---------- outlook ---------- */
+  .champion-card{
+    display:flex; align-items:center; gap:16px; margin-bottom:22px;
+    background: linear-gradient(180deg, rgba(212,164,76,0.10), rgba(212,164,76,0.03));
+    border-color: var(--brass-dim);
+  }
+  .champion-card .trophy{ font-size:30px; }
+  .champion-card .ctitle{ font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:0.08em; color:var(--muted); text-transform:uppercase; }
+  .champion-card .cname{ font-family:'Oswald',sans-serif; font-size:24px; font-weight:700; }
+  .champion-card .cpct{ margin-left:auto; text-align:right; }
+  .champion-card .cpct .v{ font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; color:var(--brass); }
+  .champion-card .cpct .l{ font-size:10.5px; color:var(--muted2); text-transform:uppercase; letter-spacing:0.06em; }
+
+  .outlook-tabs{ display:flex; gap:4px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:4px; margin-bottom:18px; width:fit-content; }
+  .outlook-tabs button{
+    appearance:none; border:none; background:transparent; color:var(--muted);
+    font-family:'Oswald',sans-serif; font-weight:500; letter-spacing:0.04em; text-transform:uppercase;
+    font-size:12px; padding:7px 13px; border-radius:7px; cursor:pointer;
+  }
+  .outlook-tabs button.active{ background:var(--surface2); color:var(--brass); }
+  .otab-view{ display:none; }
+  .otab-view.active{ display:block; }
+
+  .week-group{ margin-bottom:22px; }
+  .week-label{ font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; margin-bottom:8px; }
+  .matchup{
+    display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; gap:14px;
+    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-bottom:6px;
+  }
+  .matchup .side{ display:flex; align-items:center; gap:10px; }
+  .matchup .side.right{ flex-direction:row-reverse; text-align:right; }
+  .matchup .tname{ font-family:'Oswald',sans-serif; font-weight:600; font-size:14.5px; }
+  .matchup .tname.winner{ color:var(--brass); }
+  .matchup .tproj{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); }
+  .matchup .tpct{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted2); }
+  .matchup .vs{ font-family:'Oswald',sans-serif; font-size:11px; color:var(--muted2); letter-spacing:0.05em; }
+
+  .bracket-round{ margin-bottom:26px; }
+  .bracket-round-label{ font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:0.08em; color:var(--brass); text-transform:uppercase; margin-bottom:10px; }
+  .bye-note{ color:var(--muted2); font-size:12.5px; padding:10px 16px; }
+
+  .matchup.unplayed{ opacity:0.55; }
+  .matchup.rivalry{ border-color:var(--brass-dim); background:linear-gradient(180deg, rgba(212,164,76,0.07), transparent); }
+  .matchup.rivalry.unplayed{ opacity:0.75; }
+  .rivalry-tag{
+    font-family:'Oswald',sans-serif; font-size:9.5px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--brass); border:1px solid var(--brass-dim); border-radius:5px; padding:2px 6px; margin-left:8px;
+  }
+  .matchup .status-badge{
+    font-family:'Oswald',sans-serif; font-size:10px; letter-spacing:0.06em; text-transform:uppercase;
+    padding:3px 8px; border-radius:5px; background:var(--surface2); color:var(--muted2);
+  }
+  .matchup .status-badge.final{ background:rgba(212,164,76,0.14); color:var(--brass); }
+  .matchup .score-val{ font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:600; }
+  .matchup .score-val.winner{ color:var(--brass); }
+
+  /* ---------- weekly trend bars (team page) ---------- */
+  .week-bars{ display:flex; flex-direction:column; gap:5px; }
+  .week-bar-row{ display:grid; grid-template-columns: 44px 1fr auto; align-items:center; gap:10px; }
+  .week-bar-label{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); }
+  .week-bar-track{ height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+  .week-bar-fill{ height:100%; background:var(--brass-dim); border-radius:4px; }
+  .week-bar-fill.dip{ background:var(--bad); }
+  .week-bar-val{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); white-space:nowrap; min-width:120px; text-align:right; }
+  .bye-flag{ color:var(--bad); font-size:10px; }
+
+  .team-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:10px; }
+  .team-card{
+    display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
+    border-radius:10px; padding:14px 16px; cursor:pointer; transition: border-color .15s ease, transform .1s ease;
+  }
+  .team-card:hover{ border-color:var(--muted2); transform:translateY(-1px); }
+  .team-card .swatch{ width:14px; height:14px; border-radius:4px; flex:none; }
+  .team-card-name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:16px; }
+  .team-card-sub{ color:var(--muted); font-size:11.5px; margin-top:2px; }
+
+  /* ---------- head to head matrix ---------- */
+  .h2h-wrap{ overflow-x:auto; max-width:100%; -webkit-overflow-scrolling:touch; }
+  .h2h-table{ border-collapse:collapse; font-size:12.5px; }
+  .h2h-table th, .h2h-table td{ padding:8px 10px; text-align:center; border:1px solid var(--line); white-space:nowrap; }
+  .h2h-table th{ font-family:'Oswald',sans-serif; font-weight:600; font-size:11px; letter-spacing:0.04em; color:var(--muted); text-transform:uppercase; background:var(--surface); }
+  .h2h-table th.row-label{ text-align:left; position:sticky; left:0; background:var(--surface); }
+  .h2h-table td.self{ background:rgba(255,255,255,0.02); color:var(--muted2); }
+  .h2h-table td.record{ font-family:'IBM Plex Mono',monospace; color:var(--text); }
+  .h2h-table td.no-games{ color:var(--muted2); }
+
+  /* ---------- rules ---------- */
+  .rule-row{ display:flex; justify-content:space-between; gap:16px; padding:8px 0; border-bottom:1px solid rgba(46,50,63,0.5); font-size:13.5px; }
+  .rule-row:last-child{ border-bottom:none; }
+  .rule-row .rl{ color:var(--muted); }
+  .rule-row .rv{ text-align:right; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; }
+
+  .team-blurb{
+    font-size:14.5px; line-height:1.6; color:var(--text); font-style:italic;
+    border-left:2px solid var(--brass-dim); padding:2px 0 2px 14px; margin:2px 0 22px;
+  }
+
+  /* ---------- trophy case ---------- */
+  .trophy-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:12px; margin-bottom:8px; }
+  .trophy-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 18px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .trophy-card.awarded{ border-color:var(--brass-dim); background:linear-gradient(180deg, rgba(212,164,76,0.06), transparent); }
+  .trophy-icon{ font-size:22px; line-height:1; }
+  .trophy-title{ font-family:'Oswald',sans-serif; font-weight:600; font-size:14.5px; letter-spacing:0.02em; }
+  .trophy-desc{ font-size:11.5px; color:var(--muted); line-height:1.4; }
+  .trophy-winner{ display:flex; align-items:center; gap:8px; margin-top:2px; padding-top:10px; border-top:1px solid rgba(46,50,63,0.6); }
+  .trophy-winner .swatch{ width:9px; height:9px; }
+  .trophy-winner-name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:14px; color:var(--brass); }
+  .trophy-winner-detail{ font-size:11px; color:var(--muted2); margin-left:auto; font-family:'IBM Plex Mono',monospace; }
+  .trophy-pending{ font-size:12px; color:var(--muted2); margin-top:2px; padding-top:10px; border-top:1px solid rgba(46,50,63,0.6); font-style:italic; }
+
+  .trophy-grid.compact{ grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:8px; }
+  .trophy-grid.compact .trophy-card{ padding:10px 12px; gap:4px; }
+  .trophy-grid.compact .trophy-icon{ font-size:16px; }
+  .trophy-grid.compact .trophy-title{ font-size:11.5px; }
+  .trophy-grid.compact .trophy-desc{ display:none; }
+  .trophy-grid.compact .trophy-winner{ padding-top:6px; margin-top:0; flex-wrap:wrap; }
+  .trophy-grid.compact .trophy-winner-name{ font-size:12px; }
+  .trophy-grid.compact .trophy-winner-detail{ font-size:10px; margin-left:0; }
+  .trophy-grid.compact .trophy-pending{ padding-top:6px; margin-top:0; font-size:10.5px; }
+
+  /* ---------- standings ---------- */
+  tr.seed-bye td:first-child{ color:var(--brass); font-weight:600; }
+  tr.seed-playoff td:first-child{ color:var(--good); }
+  tr.seed-out td:first-child{ color:var(--muted2); }
+  .streak-w{ color:var(--good); font-family:'IBM Plex Mono',monospace; font-weight:600; }
+  .streak-l{ color:var(--bad); font-family:'IBM Plex Mono',monospace; font-weight:600; }
+  .streak-none{ color:var(--muted2); font-family:'IBM Plex Mono',monospace; }
+
+  /* ---------- league news ---------- */
+  .news-post{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:14px; }
+  .news-date{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted2); text-transform:uppercase; letter-spacing:0.04em; }
+  .news-title{ font-family:'Oswald',sans-serif; font-weight:600; font-size:17px; margin:4px 0 10px; }
+  .news-body{ font-size:14px; line-height:1.65; color:var(--text); }
+
+  .txn-row{
+    display:flex; align-items:flex-start; gap:12px; background:var(--surface); border:1px solid var(--line);
+    border-radius:10px; padding:13px 16px; margin-bottom:8px;
+  }
+  .txn-tag{
+    font-family:'Oswald',sans-serif; font-size:10px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase;
+    padding:3px 8px; border-radius:5px; flex:none; margin-top:2px;
+  }
+  .txn-tag.trade{ background:rgba(161,95,217,0.16); color:#C398EA; }
+  .txn-tag.add{ background:rgba(111,191,122,0.16); color:var(--good); }
+  .txn-tag.drop{ background:rgba(224,101,90,0.14); color:var(--bad); }
+  .txn-body{ flex:1; }
+  .txn-date{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--muted2); float:right; }
+  .txn-main{ font-size:13.5px; color:var(--text); line-height:1.5; }
+  .txn-main b{ color:var(--brass); font-weight:600; }
+  .txn-note{ font-size:12px; color:var(--muted); margin-top:3px; }
+
+  .txn-analysis{ margin-top:12px; padding-top:12px; border-top:1px solid rgba(46,50,63,0.6); }
+  .winner-badge{
+    display:inline-block; font-family:'Oswald',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.04em;
+    color:var(--brass); background:rgba(212,164,76,0.12); border:1px solid var(--brass-dim);
+    border-radius:6px; padding:4px 10px; margin-bottom:8px;
+  }
+  .txn-impact-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:8px; margin-bottom:10px; }
+  .txn-impact{ font-size:12.5px; line-height:1.5; color:var(--text); }
+  .txn-impact b{ color:var(--brass); }
+  .txn-reax{ background:var(--surface2); border-radius:8px; padding:10px 12px; }
+  .txn-reax-label{ font-size:10px; color:var(--muted2); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px; }
+  .txn-reax-quote{ font-size:12.5px; font-style:italic; color:var(--muted); line-height:1.6; }
+
+  /* ---------- draft picks ---------- */
+  .pick-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:10px;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .pick-label{ font-family:'Oswald',sans-serif; font-weight:600; font-size:16px; min-width:110px; }
+  .pick-flow{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1; }
+  .pick-team-chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:'Oswald',sans-serif; font-size:12.5px; font-weight:600;
+    background:var(--surface2); border-radius:6px; padding:5px 10px;
+  }
+  .pick-arrow{ color:var(--muted2); font-size:13px; }
+  .pick-team-chip.current{ background:rgba(212,164,76,0.14); color:var(--brass); }
+  .net-pick-row{ font-size:12.5px; color:var(--text); line-height:1.6; }
+  .net-pick-row .gain{ color:var(--good); }
+  .net-pick-row .loss{ color:var(--bad); }
+
+  /* ---------- draft board ---------- */
+  .draft-round{ margin-bottom:18px; }
+  .draft-round-label{
+    font-family:'Oswald',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:8px;
+  }
+  .draft-round-grid{ display:grid; grid-template-columns: repeat(10, 1fr); gap:8px; }
+  @media (max-width: 900px){ .draft-round-grid{ grid-template-columns: repeat(5, 1fr); } }
+  @media (max-width: 480px){ .draft-round-grid{ grid-template-columns: repeat(5, 1fr); gap:5px; } }
+  .draft-slot{
+    background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:8px 8px;
+    min-width:0;
+  }
+  .draft-slot.traded{ border-color:var(--brass-dim); background:linear-gradient(180deg, rgba(212,164,76,0.07), transparent); }
+  .draft-slot-num{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted2); }
+  .draft-slot-team{ display:flex; align-items:center; gap:5px; font-family:'Oswald',sans-serif; font-weight:600; font-size:11.5px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .draft-slot-team .swatch{ flex:none; }
+  .draft-slot-orig{ font-size:9px; color:var(--muted2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* ---------- rivals card ---------- */
+  .rival-row{ display:flex; gap:12px; padding:9px 0; border-bottom:1px solid rgba(46,50,63,0.5); }
+  .rival-row:last-child{ border-bottom:none; }
+  .rival-row .swatch{ width:12px; height:12px; border-radius:4px; flex:none; margin-top:2px; }
+  .rival-name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:14.5px; cursor:pointer; }
+  .rival-name:hover{ color:var(--brass); }
+  .rival-tier{ font-size:10px; color:var(--muted2); text-transform:uppercase; letter-spacing:0.05em; margin-left:8px; }
+  .rival-record{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); margin-left:8px; }
+  .rival-quote{ font-size:13.5px; font-style:italic; color:var(--text); margin-top:4px; line-height:1.5; }
+  .rival-quote::before{ content:'"'; color:var(--brass-dim); }
+  .rival-quote::after{ content:'"'; color:var(--brass-dim); }
+
+  /* ---------- rivalry list ---------- */
+  .rivalry-row{
+    display:grid; grid-template-columns: 1fr auto 1fr auto; align-items:center; gap:12px;
+    padding:10px 0; border-bottom:1px solid rgba(46,50,63,0.5);
+  }
+  .rivalry-row:last-child{ border-bottom:none; }
+  .rivalry-team{ display:flex; align-items:center; gap:8px; font-size:13.5px; }
+  .rivalry-team.right{ flex-direction:row-reverse; text-align:right; }
+  .rivalry-record{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:14px; color:var(--brass); min-width:56px; text-align:center; }
+  .rivalry-tier{ font-size:10px; color:var(--muted2); text-transform:uppercase; letter-spacing:0.05em; min-width:90px; }
+
+  /* ---------- vegas lines ---------- */
+  .lines-tabs{ display:flex; gap:4px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:4px; margin-bottom:18px; width:fit-content; }
+  .lines-tabs button{
+    appearance:none; border:none; background:transparent; color:var(--muted);
+    font-family:'Oswald',sans-serif; font-weight:500; letter-spacing:0.04em; text-transform:uppercase;
+    font-size:12px; padding:7px 13px; border-radius:7px; cursor:pointer;
+  }
+  .lines-tabs button.active{ background:var(--surface2); color:var(--brass); }
+  .ltab-view{ display:none; }
+  .ltab-view.active{ display:block; }
+
+  .line-card{
+    display:grid; grid-template-columns: 1fr auto 1fr; gap:14px; align-items:center;
+    background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin-bottom:8px;
+  }
+  .line-team{ display:flex; align-items:center; gap:10px; }
+  .line-team.right{ flex-direction:row-reverse; text-align:right; }
+  .line-team .tname{ font-family:'Oswald',sans-serif; font-weight:600; font-size:15px; }
+  .line-team .line-figs{ display:flex; gap:14px; margin-top:4px; }
+  .line-team.right .line-figs{ flex-direction:row-reverse; }
+  .line-fig{ text-align:center; }
+  .line-fig .lv{ font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; }
+  .line-fig .ll{ display:block; font-size:9px; color:var(--muted2); text-transform:uppercase; letter-spacing:0.06em; margin-top:1px; }
+  .line-total{ text-align:center; }
+  .line-total .lv{ font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--muted); }
+  .line-total .ll{ display:block; font-size:9px; color:var(--muted2); text-transform:uppercase; letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="mark">BIG<span>TIME</span></div>
+      <div class="sub">2026 · 10-TEAM DYNASTY SUPERFLEX</div>
+    </div>
+    <div class="nav" id="nav">
+      <button data-view="news" class="active">League News</button>
+      <button data-view="seasonstandings">Standings</button>
+      <button data-view="standings">Power Rankings</button>
+      <button data-view="team">Teams</button>
+      <button data-view="h2h">Head to Head</button>
+      <button data-view="schedule2026">2026 Schedule</button>
+      <button data-view="outlook">2026 Projections</button>
+      <button data-view="trophies">Trophy Case</button>
+      <button data-view="rankings">Player Rankings</button>
+      <button data-view="rules">League Rules</button>
+    </div>
+    <div class="updated"><span class="live-dot"></span><b>Live</b> · updated <span id="updatedAt">—</span></div>
+  </div>
+</div>
+
+<main>
+
+  <section class="view" id="view-standings">
+    <h1 class="page-title">Power Rankings</h1>
+    <p class="page-sub">Ranked by roster CSV average · click a team for the full breakdown</p>
+    <div class="ladder" id="ladder"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>League Pulse</h3>
+        <div id="pulse"></div>
+      </div>
+      <div class="card">
+        <h3>Positional Rankings</h3>
+        <div id="byNumbers"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view active" id="view-news">
+    <h1 class="page-title">League News</h1>
+    <p class="page-sub">Weekly recaps and every roster transaction &middot; updated as moves happen</p>
+
+    <h2 class="page-title" style="font-size:18px; margin-top:8px;">Weekly Recap</h2>
+    <div id="newsPostsList"></div>
+
+    <h2 class="page-title" style="font-size:18px; margin-top:28px;">Transaction Log</h2>
+    <div id="transactionsList"></div>
+  </section>
+
+  <section class="view" id="view-seasonstandings">
+    <h1 class="page-title">Standings</h1>
+    <p class="page-sub">Current 2026 season standings &middot; top 6 make the playoffs, top 2 get a first-round bye &middot; based on completed games only</p>
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th>Seed</th><th>Team</th><th>W</th><th>L</th><th>T</th><th>PF</th><th>PA</th><th>Streak</th>
+      </tr></thead>
+      <tbody id="seasonStandingsBody"></tbody>
+    </table></div>
+  </section>
+
+  <section class="view" id="view-rankings">
+    <h1 class="page-title">Player Rankings</h1>
+    <p class="page-sub" id="rankingsSub">Consensus of FantasyPros, KTC and PFF &middot; projections from Sleeper &middot; click a team name to view their roster</p>
+    <div class="rank-mode-tabs" id="rankModeTabs">
+      <button data-mode="dynasty" class="active">Dynasty</button>
+      <button data-mode="2026">2026</button>
+    </div>
+    <div class="filters">
+      <input type="text" id="search" placeholder="Search players…">
+      <select id="posFilter">
+        <option value="">All positions</option>
+        <option value="QB">QB</option>
+        <option value="RB">RB</option>
+        <option value="WR">WR</option>
+        <option value="TE">TE</option>
+        <option value="K">K</option>
+        <option value="DST">DST</option>
+      </select>
+      <select id="teamFilter"><option value="">All teams</option></select>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+    <div class="table-wrap"><table>
+      <thead>
+        <tr>
+          <th data-key="rank">Rank</th>
+          <th data-key="name">Player</th>
+          <th data-key="pos">Pos</th>
+          <th data-key="team">NFL</th>
+          <th data-key="age">Age</th>
+          <th data-key="csv" id="csvHeaderLabel">Dynasty CSV</th>
+          <th data-key="season_proj">2026 Proj (Sleeper)</th>
+          <th data-key="week1_proj">Wk1 Proj</th>
+          <th data-key="owner">Owner</th>
+        </tr>
+      </thead>
+      <tbody id="rankingsBody"></tbody>
+    </table></div>
+  </section>
+
+  <section class="view" id="view-team">
+    <div class="back-link" id="backToStandings">← All teams</div>
+    <div id="teamContent"></div>
+  </section>
+
+  <section class="view" id="view-h2h">
+    <h1 class="page-title">Head to Head</h1>
+    <p class="page-sub">All-time record between every pair of teams &middot; based on completed games only &middot; first season, so everything starts at 0-0</p>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3>&#9876; All-Time Rivalry Record</h3>
+      <div id="rivalryList"></div>
+    </div>
+
+    <div class="h2h-wrap">
+      <table class="h2h-table" id="h2hTable"></table>
+    </div>
+  </section>
+
+  <section class="view" id="view-schedule2026">
+    <h1 class="page-title">2026 Schedule</h1>
+    <p class="page-sub">Actual weekly matchups and results &middot; updated Tuesdays after games are played &middot; see the Standings tab for full current rankings</p>
+    <div class="filters">
+      <select id="scheduleWeekFilter"></select>
+      <span class="result-count" id="scheduleWeekCount"></span>
+    </div>
+    <div id="realScheduleList"></div>
+  </section>
+
+  <section class="view" id="view-outlook">
+    <h1 class="page-title">2026 Projections</h1>
+    <p class="page-sub">Based on Sleeper's projected season point totals (season total &divide; 16, bye-adjusted; Week 1 uses Sleeper's live Week 1 projection) &middot; 20,000-season Monte Carlo simulation</p>
+
+    <div class="card champion-card" id="championCard"></div>
+
+    <div class="outlook-tabs" id="outlookTabs">
+      <button data-otab="schedule" class="active">Schedule</button>
+      <button data-otab="standings">Standings</button>
+      <button data-otab="playoffs">Playoffs</button>
+      <button data-otab="odds">Championship Odds</button>
+      <button data-otab="lines">Vegas Lines</button>
+      <button data-otab="draft">2027 Projected Draft</button>
+    </div>
+
+    <div class="otab-view active" id="otab-schedule">
+      <div class="filters">
+        <select id="weekFilter"></select>
+        <span class="result-count" id="weekCount"></span>
+      </div>
+      <div id="scheduleList"></div>
+    </div>
+
+    <div class="otab-view" id="otab-standings">
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Seed</th><th>Team</th><th>Proj W-L</th><th>Proj PF</th>
+          <th>Sim Avg Wins</th><th>Playoff %</th><th>Bye %</th>
+        </tr></thead>
+        <tbody id="standingsBody"></tbody>
+      </table></div>
+    </div>
+
+    <div class="otab-view" id="otab-playoffs">
+      <div id="playoffBracket"></div>
+    </div>
+
+    <div class="otab-view" id="otab-odds">
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Team</th><th>Sim Avg Wins</th><th>Playoff %</th><th>Bye %</th>
+          <th>Reach Final %</th><th>Win It All %</th>
+        </tr></thead>
+        <tbody id="oddsBody"></tbody>
+      </table></div>
+    </div>
+    <div class="otab-view" id="otab-lines">
+      <p class="page-sub" style="margin-bottom:14px;">For entertainment purposes only &middot; not real money, just bragging rights</p>
+      <div class="filters">
+        <select id="linesWeekFilter2"></select>
+        <span class="result-count" id="linesWeekCount2"></span>
+      </div>
+      <div id="linesList2"></div>
+      <h3 style="margin:20px 0 10px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; font-weight:600;">Season Futures</h3>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Team</th><th>Win Total</th><th>Make Playoffs</th><th>Win It All</th>
+        </tr></thead>
+        <tbody id="futuresBody2"></tbody>
+      </table></div>
+    </div>
+
+    <div class="otab-view" id="otab-draft">
+      <p class="page-sub" style="margin-bottom:14px;">Order based on projected 2026 finish (worst record picks first, linear across all 5 rounds) &middot; current owner shown, traded slots flagged</p>
+      <div id="draftBoard"></div>
+
+      <h3 style="margin:24px 0 10px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; font-weight:600;">Traded Picks</h3>
+      <div id="tradedPicksList"></div>
+
+      <h3 style="margin:20px 0 10px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; font-weight:600;">Net Picks by Team</h3>
+      <div class="trophy-grid" id="netPicksGrid"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-trophies">
+    <h1 class="page-title">Trophy Case</h1>
+    <p class="page-sub">Season awards &middot; live categories update automatically from results, season-end trophies are locked in once the year wraps</p>
+
+    <h2 class="page-title" style="font-size:18px; margin-top:8px;">Live This Season</h2>
+    <div class="trophy-grid" id="liveTrophies"></div>
+
+    <h2 class="page-title" style="font-size:18px; margin-top:28px;">All-Time Records</h2>
+    <p class="page-sub" style="margin-bottom:12px;">Carries forward across seasons &middot; only updates when a record actually gets broken</p>
+    <div class="trophy-grid" id="allTimeTrophies"></div>
+
+    <h2 class="page-title" style="font-size:18px; margin-top:28px;">Season-End Hardware</h2>
+    <div class="trophy-grid" id="seasonTrophies"></div>
+  </section>
+
+  <section class="view" id="view-rules">
+    <h1 class="page-title">League Rules</h1>
+    <p class="page-sub">Big Time &middot; 2026 10-Team Dynasty Superflex &middot; pulled from Sleeper league settings</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Basics</h3>
+        <div id="rulesBasics"></div>
+      </div>
+      <div class="card">
+        <h3>Waivers</h3>
+        <div id="rulesWaivers"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3>Starting Roster</h3>
+      <div id="rulesRoster"></div>
+    </div>
+
+    <h2 class="page-title" style="font-size:20px; margin-top:32px;">Scoring</h2>
+    <div class="grid-2" id="rulesScoring"></div>
+  </section>
+
+</main>
+
+<footer>Big Time Dynasty · data synced from league spreadsheet</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
